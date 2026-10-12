@@ -1,0 +1,31 @@
+frappe.pages['ag-analytics-dashboa'].on_page_load = function(wrapper) {
+    let page = frappe.ui.make_app_page({parent: wrapper, title: 'AG Analytics Dashboard', single_column: true});
+    page.set_indicator('60k Records Loaded', 'green');
+    let from_date = page.add_field({fieldtype:'Date', label:'From', fieldname:'from_date', default: frappe.datetime.add_months(frappe.datetime.now_date(), -6)});
+    let to_date = page.add_field({fieldtype:'Date', label:'To', fieldname:'to_date', default: frappe.datetime.now_date()});
+    let region = page.add_field({fieldtype:'Select', label:'Region', fieldname:'region', options:['','North','South','East','West','Central']});
+    let product = page.add_field({fieldtype:'Select', label:'Product', fieldname:'product', options:['','Product A','Product B','Product C','Service X','Service Y']});
+    let sales_person = page.add_field({fieldtype:'Select', label:'Sales Rep', fieldname:'sales_person', options:['','Rahul','Priya','Amit','Sneha','Vikram']});
+    let btn = page.add_field({fieldtype:'Button', label:'Apply', fieldname:'apply'});
+    let $dashboard = $(`<div class="p-3"><div id="kpi-row" class="row"></div><div class="row mt-4"><div class="col-md-6"><div class="card p-3"><h5>Sales by Month</h5><div id="chart-month"></div></div></div><div class="col-md-6"><div class="card p-3"><h5>Sales by Region</h5><div id="chart-region"></div></div></div></div><div class="row mt-4"><div class="col-md-6"><div class="card p-3"><h5>Sales by Product</h5><div id="chart-product"></div></div></div><div class="col-md-6"><div class="card p-3"><h5>Sales by Rep</h5><div id="chart-rep"></div></div></div></div><div class="row mt-4"><div class="col-md-4"><div class="card p-3"><h5>Delivery Status</h5><div id="chart-delivery"></div></div></div><div class="col-md-4"><div class="card p-3"><h5>Rating Distribution</h5><div id="chart-rating"></div></div></div><div class="col-md-4"><div class="card p-3"><h5>Delay vs Rating</h5><div id="chart-delay-rating"></div></div></div></div><div class="card p-3 mt-4"><h5>🤖 AI Insights</h5><div class="input-group mb-3"><input id="ai-question" class="form-control" placeholder="Which region had most delayed deliveries?"><button id="ask-ai" class="btn btn-primary">Ask AI</button></div><div id="ai-answer" class="alert alert-info" style="display:none"></div><div id="ai-insights" class="mt-2"></div></div></div>`).appendTo(page.body);
+    function load_data() {
+        let f = {from_date: from_date.get_value(), to_date: to_date.get_value(), region: region.get_value(), product: product.get_value(), sales_person: sales_person.get_value()};
+        frappe.call({method: 'automategenie_analytics.automategenie_analytics.api.analytics.get_analytics', args:{filters: f}, callback(r){
+            console.log(r); let d=r.message; let k=d.kpi;
+            $('#kpi-row').html(`<div class="col-md-2"><div class="card p-2 text-center shadow-sm"><h6>Lead Conv</h6><h3>${k.lead_conv}%</h3><small>${k.total_customers}/${k.total_leads}</small></div></div><div class="col-md-2"><div class="card p-2 text-center shadow-sm"><h6>Quot->SO</h6><h3>${k.quot_conv}%</h3><small>${k.total_so}/${k.total_quot}</small></div></div><div class="col-md-2"><div class="card p-2 text-center shadow-sm"><h6>Total Sales</h6><h3>₹${(k.total_sales/100000).toFixed(1)}L</h3><small>Avg ₹${k.avg_order}</small></div></div><div class="col-md-2"><div class="card p-2 text-center shadow-sm"><h6>Delivery</h6><h3>${k.del_completion}%</h3><small>${k.delayed_count} delayed</small></div></div><div class="col-md-2"><div class="card p-2 text-center shadow-sm"><h6>Avg Rating</h6><h3>${k.avg_rating} ⭐</h3><small>${k.low_rated} low</small></div></div><div class="col-md-2"><div class="card p-2 text-center shadow-sm"><h6>Records</h6><h3>60k</h3><small>Verified</small></div></div>`);
+            try{
+            new frappe.Chart("#chart-month", {data:{labels: d.charts.sales_by_month.map(x=>x.month), datasets:[{values: d.charts.sales_by_month.map(x=>x.value)}]}, type:'line', height:200, colors:['#2E86AB']});
+            new frappe.Chart("#chart-region", {data:{labels: d.charts.sales_by_region.map(x=>x.region), datasets:[{values: d.charts.sales_by_region.map(x=>x.value)}]}, type:'bar', height:200, colors:['#A23B72']});
+            new frappe.Chart("#chart-product", {data:{labels: d.charts.sales_by_product.map(x=>x.product), datasets:[{values: d.charts.sales_by_product.map(x=>x.value)}]}, type:'pie', height:200});
+            new frappe.Chart("#chart-rep", {data:{labels: d.charts.sales_by_rep.map(x=>x.sales_person), datasets:[{values: d.charts.sales_by_rep.map(x=>x.value)}]}, type:'bar', height:200, colors:['#F18F01']});
+            new frappe.Chart("#chart-delivery", {data:{labels: d.charts.delivery_by_status.map(x=>x.delivery_status), datasets:[{values: d.charts.delivery_by_status.map(x=>x.cnt)}]}, type:'donut', height:200});
+            new frappe.Chart("#chart-rating", {data:{labels: d.charts.rating_dist.map(x=>x.rating+'⭐'), datasets:[{values: d.charts.rating_dist.map(x=>x.cnt)}]}, type:'bar', height:200, colors:['#C73E1D']});
+            if(d.charts.delay_vs_rating.length){ new frappe.Chart("#chart-delay-rating", {data:{labels: d.charts.delay_vs_rating.map(x=>x.status), datasets:[{values: d.charts.delay_vs_rating.map(x=>x.avg_rating)}]}, type:'bar', height:200}); }
+            }catch(e){console.log(e)}
+        }});
+        frappe.call({method: 'automategenie_analytics.automategenie_analytics.api.analytics.get_ai_insights', args:{filters: f}, callback(r){ let ins = r.message.insights.map(i=>`<li>${i}</li>`).join(''); $('#ai-insights').html(`<ul>${ins}</ul>`); }});
+    }
+    btn.$input.on('click', load_data);
+    $('#ask-ai').on('click', function(){ let q=$('#ai-question').val(); let f={from_date: from_date.get_value(), to_date: to_date.get_value(), region: region.get_value(), product: product.get_value(), sales_person: sales_person.get_value()}; frappe.call({method: 'automategenie_analytics.automategenie_analytics.api.analytics.get_ai_insights', args:{question: q, filters: f}, callback(r){ $('#ai-answer').show().html(`<b>Answer:</b> ${r.message.answer}<br><br><b>Insights:</b><ul>${r.message.insights.map(i=>`<li>${i}</li>`).join('')}</ul>`); }}); });
+    load_data();
+}

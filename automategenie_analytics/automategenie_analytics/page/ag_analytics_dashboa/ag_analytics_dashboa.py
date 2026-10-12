@@ -1,0 +1,2 @@
+import frappe
+from automategenie_analytics.automategenie_analytics.api.analytics import get_analytics, get_ai_insights

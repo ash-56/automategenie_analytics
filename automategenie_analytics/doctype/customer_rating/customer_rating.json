@@ -1,0 +1,81 @@
+{
+ "doctype": "DocType",
+ "name": "Customer Rating",
+ "module": "AutomateGenie Analytics",
+ "autoname": "format:AG-RAT-{####}",
+ "naming_rule": "Expression",
+ "field_order": [
+  "ag_delivery",
+  "ag_customer",
+  "ag_sales_order",
+  "region",
+  "product",
+  "sales_person",
+  "rating",
+  "feedback",
+  "posting_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "ag_delivery",
+   "fieldtype": "Link",
+   "label": "Delivery",
+   "options": "AG Delivery",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ag_customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "AG Customer"
+  },
+  {
+   "fieldname": "ag_sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "AG Sales Order"
+  },
+  {
+   "fieldname": "region",
+   "fieldtype": "Select",
+   "label": "Region",
+   "options": "North\nSouth\nEast\nWest\nCentral"
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Select",
+   "label": "Product",
+   "options": "Product A\nProduct B\nProduct C\nService X\nService Y"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Select",
+   "label": "Sales Person",
+   "options": "Rahul\nPriya\nAmit\nSneha\nVikram"
+  },
+  {
+   "fieldname": "rating",
+   "fieldtype": "Int",
+   "label": "Rating (1-5)"
+  },
+  {
+   "fieldname": "feedback",
+   "fieldtype": "Small Text",
+   "label": "Feedback"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "creation": "2026-05-13 00:00:00",
+ "docstatus": 0,
+ "doctype": "Page",
+ "module": "Automategenie Analytics",
+ "name": "ag-analytics-dashboard",
+ "page_name": "ag-analytics-dashboard",
+ "roles": [{"role": "System Manager"}],
+ "standard": "Yes",
+ "title": "AG Analytics Dashboard"
+}

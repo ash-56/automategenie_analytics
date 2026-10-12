@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutomateGenie Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>body{font-family:sans-serif;padding:20px;background:#f5f5f5} .card{background:white;padding:20px;border-radius:10px;margin:10px;box-shadow:0 2px 5px #ddd} .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px} h1{color:#333}</style>
+</head>
+<body>
+<h1>🤖 AutomateGenie Analytics - Customer Ratings</h1>
+<div class="card">Total Ratings: <b>{{ analytics.total_count }}</b></div>
+<div class="grid">
+    <div class="card"><h3>Region Wise Avg Rating</h3><canvas id="regionChart"></canvas></div>
+    <div class="card"><h3>Product Wise Avg Rating</h3><canvas id="productChart"></canvas></div>
+</div>
+<div class="card"><h3>Low Ratings (Need Attention)</h3>
+<table border=1 cellpadding=8 style="width:100%"><tr><th>Customer</th><th>Rating</th><th>Region</th><th>Product</th><th>Feedback</th></tr>
+{% for r in analytics.low_ratings %}<tr><td>{{ r.customer }}</td><td>{{ r.rating }}</td><td>{{ r.region }}</td><td>{{ r.product }}</td><td>{{ r.feedback }}</td></tr>{% endfor %}
+</table></div>
+<script>
+const regionData = {{ analytics.region_wise | tojson }};
+new Chart(document.getElementById('regionChart'), {type:'bar', data:{labels: regionData.map(d=>d.region), datasets:[{label:'Avg Rating', data: regionData.map(d=>d.avg_rating), backgroundColor:'#667eea'}]}});
+const prodData = {{ analytics.product_wise | tojson }};
+new Chart(document.getElementById('productChart'), {type:'doughnut', data:{labels: prodData.map(d=>d.product), datasets:[{data: prodData.map(d=>d.avg_rating), backgroundColor:['#ff6384','#36a2eb','#ffce56','#4bc0c0','#9966ff']}]}});
+</script>
+</body>
+</html>
